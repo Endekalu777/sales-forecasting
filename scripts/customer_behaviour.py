@@ -216,3 +216,38 @@ class CustomerBehaviour():
         plt.xlabel('Competition Distance')
         plt.ylabel('Promo Lift (%)')
         plt.show()
+
+    def analyze_opening_hours(self):
+        # Identify stores open on all weekdays
+        open_stores = self.train_merged.groupby('Store')['Open'].mean()
+        always_open = open_stores[open_stores == 1].index
+
+        # Compare weekend sales for always open stores vs others
+        self.train_merged['IsWeekend'] = self.train_merged['DayOfWeek'].isin([6, 7])
+        weekend_sales = self.train_merged.groupby(['Store', 'IsWeekend'])['Sales'].mean().unstack()
+        weekend_sales['WeekendRatio'] = weekend_sales[True] / weekend_sales[False]
+
+        always_open_ratio = weekend_sales.loc[always_open, 'WeekendRatio'].mean()
+        others_ratio = weekend_sales.loc[~weekend_sales.index.isin(always_open), 'WeekendRatio'].mean()
+
+        plt.figure(figsize=(10, 6))
+        plt.bar(['Always Open', 'Others'], [always_open_ratio, others_ratio])
+        plt.title('Weekend to Weekday Sales Ratio')
+        plt.ylabel('Ratio')
+        plt.show()
+
+    def analyze_assortment_effect(self):
+        assortment_map = {
+            'a' : 'basic',
+            'b' : 'extra',
+            'c' : 'extended' 
+        }
+        self.train_merged['Assortment'] = self.train_merged['Assortment'].map(assortment_map)
+        assortment_sales = self.train_merged.groupby('Assortment')['Sales'].mean()
+
+        plt.figure(figsize=(10, 6))
+        assortment_sales.plot(kind='bar')
+        plt.title('Average Sales by Assortment Type')
+        plt.xlabel('Assortment Type')
+        plt.ylabel('Average Sales')
+        plt.show()
