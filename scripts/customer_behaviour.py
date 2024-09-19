@@ -129,5 +129,90 @@ class CustomerBehaviour():
         plt.show()
 
 
+    def analyze_promo_effect(self):
+        # Overall effect of promos on sales and customers
+        promo_effect = self.train_merged.groupby('Promo')[['Sales', 'Customers']].mean()
+        
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+        promo_effect['Sales'].plot(kind='bar', ax=ax1)
+        ax1.set_title('Average Sales with/without Promo')
+        ax1.set_xlabel('Promo')
+        ax1.set_ylabel('Average Sales')
 
+        promo_effect['Customers'].plot(kind='bar', ax=ax2)
+        ax2.set_title('Average Customers with/without Promo')
+        ax2.set_xlabel('Promo')
+        ax2.set_ylabel('Average Customers')
 
+        plt.tight_layout()
+        plt.show()
+
+        # Effect on existing customers
+        self.train_merged['SalesPerCustomer'] = self.train_merged['Sales'] / self.train_merged['Customers']
+        avg_sales_per_customer = self.train_merged.groupby('Promo')['SalesPerCustomer'].mean()
+
+        plt.figure(figsize=(10, 6))
+        avg_sales_per_customer.plot(kind='bar')
+        plt.title('Average Sales per Customer with/without Promo')
+        plt.xlabel('Promo')
+        plt.ylabel('Average Sales per Customer')
+        plt.show()
+
+        # Promo effectiveness by store type
+        promo_effect_by_store = self.train_merged.groupby(['StoreType', 'Promo'])['Sales'].mean().unstack()
+        promo_lift = (promo_effect_by_store[1] - promo_effect_by_store[0]) / promo_effect_by_store[0] * 100
+
+        plt.figure(figsize=(10, 6))
+        promo_lift.plot(kind='bar')
+        plt.title('Promo Lift Percentage by Store Type')
+        plt.xlabel('Store Type')
+        plt.ylabel('Promo Lift (%)')
+        plt.show()
+
+        # Promo effectiveness by day of week
+        promo_effect_by_dow = self.train_merged.groupby(['DayOfWeek', 'Promo'])['Sales'].mean().unstack()
+        promo_lift_dow = (promo_effect_by_dow[1] - promo_effect_by_dow[0]) / promo_effect_by_dow[0] * 100
+
+        plt.figure(figsize=(12, 6))
+        promo_lift_dow.plot(kind='bar')
+        plt.title('Promo Lift Percentage by Day of Week')
+        plt.xlabel('Day of Week')
+        plt.ylabel('Promo Lift (%)')
+        plt.show()
+
+    def analyze_promo_deployment(self):
+        # Calculate average sales lift for each store
+        store_promo_effect = self.train_merged.groupby(['Store', 'Promo'])['Sales'].mean().unstack()
+        store_promo_lift = (store_promo_effect[1] - store_promo_effect[0]) / store_promo_effect[0] * 100
+
+        # Sort stores by promo lift
+        top_stores = store_promo_lift.sort_values(ascending=False)
+
+        plt.figure(figsize=(12, 6))
+        top_stores.head(20).plot(kind='bar')
+        plt.title('Top 20 Stores by Promo Lift Percentage')
+        plt.xlabel('Store')
+        plt.ylabel('Promo Lift (%)')
+        plt.show()
+
+        # Analyze promo effectiveness by store characteristics
+        store_chars = self.store_df.set_index('Store')
+        store_chars['PromoLift'] = store_promo_lift
+
+        # Promo lift by store type
+        promo_lift_by_type = store_chars.groupby('StoreType')['PromoLift'].mean()
+
+        plt.figure(figsize=(10, 6))
+        promo_lift_by_type.plot(kind='bar')
+        plt.title('Average Promo Lift by Store Type')
+        plt.xlabel('Store Type')
+        plt.ylabel('Average Promo Lift (%)')
+        plt.show()
+
+        # Correlation of promo lift with competition distance
+        plt.figure(figsize=(10, 6))
+        plt.scatter(store_chars['CompetitionDistance'], store_chars['PromoLift'])
+        plt.title('Promo Lift vs Competition Distance')
+        plt.xlabel('Competition Distance')
+        plt.ylabel('Promo Lift (%)')
+        plt.show()
