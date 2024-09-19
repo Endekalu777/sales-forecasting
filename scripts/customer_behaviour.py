@@ -90,6 +90,14 @@ class CustomerBehaviour():
         plt.show()
 
     def analyze_holidays(self):
+        holiday_map = {
+            'a' : 'Public Holiday',
+            'b' : 'Easter Holiday',
+            'c' : 'Christmas',
+            '0' : 'None'
+        }
+
+        self.train_merged['StateHoliday'] = self.train_merged['StateHoliday'].map(holiday_map)
         holiday_sales = self.train_merged.groupby('StateHoliday') ['Sales'].mean()
         plt.figure(figsize = (12 ,6))
         holiday_sales.plot(kind = 'bar')
