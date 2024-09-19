@@ -1,27 +1,33 @@
+import sys
 import pandas as pd
 import numpy as np
 from IPython.display import display
 import matplotlib.pyplot as plt
 import seaborn as sns
+import logging
 import warnings
 warnings.filterwarnings("ignore")
+
+# Configure logging to display in Jupyter notebook
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class CustomerBehaviour():
     def __init__(self, store_path, train_path, test_path):
         self.store_df = pd.read_csv(store_path)
         self.train_df = pd.read_csv(train_path)
         self.test_df = pd.read_csv(test_path)
-        display("Data loaded successfully")
+        logger.info("Data loaded successfully")
 
     def merge_data(self):
         self.train_merged = pd.merge(self.train_df, self.store_df, on = 'Store')
         self.test_merged = pd.merge(self.test_df, self.store_df, on = 'Store')
-        display("Data merged successfully")
+        logger.info("Data merged successfully")
     
     def clean_data(self):
         for df_name, df in [('Train Merged Data', self.train_merged), ('Test Merged Data', self.test_merged)]:
-            display(f"---{df_name}---")
-            display(df.head())
+            logger.info(f"---{df_name}---")
+            logger.info(df.head())
 
             # Calculate missing values
             missing_values = df.isnull().sum()
@@ -33,14 +39,14 @@ class CustomerBehaviour():
             # Concatenate the two Series
             combined_missing = pd.concat([missing_values, missing_percentage], axis=1)
             combined_missing.columns = ['Missing Values', 'Percentage(%)']
-            display(combined_missing)
+            logger.info(f"Missing values: \n{combined_missing}")
 
             # Handle outliers using z-score (only for numeric columns)
             numeric_cols = df.select_dtypes(include=[np.number]).columns
             for col in numeric_cols:
                 df[f'{col}_z'] = np.abs((df[col] - df[col].mean()) / df[col].std())
                 outliers = df[df[f'{col}_z'] > 3]
-                display(f"Number of outliers in {col}: {len(outliers)}")
+                logger.info(f"Number of outliers in {col}: {len(outliers)}")
 
                 # Replace outliers with median
                 median_value = df[col].median()
@@ -71,10 +77,10 @@ class CustomerBehaviour():
             remaining_missing = df.isnull().sum()
             combined_remaining_missing = pd.concat([remaining_missing, (remaining_missing / total_values) * 100], axis=1)
             combined_remaining_missing.columns = ['Missing Values', 'Percentage(%)']
-            display("Remaining Missing Values After Cleaning:")
-            display(combined_remaining_missing[combined_remaining_missing['Missing Values'] > 0])
+            logger.info("Remaining Missing Values After Cleaning:")
+            logger.info(combined_remaining_missing[combined_remaining_missing['Missing Values'] > 0])
 
-        display("Data cleaned successfully.")
+        logger.info("Data cleaned successfully.")
 
 
     def analyze_promotion(self):
@@ -88,6 +94,8 @@ class CustomerBehaviour():
         plt.title('Distribution of Promotions in Train and Test Sets')
         plt.legend()
         plt.show()
+
+        logger.info("Promotion analysis completed.")
 
     def analyze_holidays(self):
         holiday_map = {
@@ -107,6 +115,8 @@ class CustomerBehaviour():
         plt.xticks(rotation = 0)
         plt.show()
 
+        logger.info("Holiday analysis completed")
+
     def analyze_seasonal_behavior(self):
         monthly_sales = self.train_merged.groupby('Month')['Sales'].mean()
 
@@ -118,6 +128,8 @@ class CustomerBehaviour():
         plt.xticks(range(1, 13))
         plt.grid(True)
         plt.show()
+
+        logger.info("Seasonal behavior analysis completed.")
     
     def analyze_sales_customers_correlation(self):
         correlation = self.train_merged['Sales'].corr(self.train_merged['Customers'])
@@ -128,6 +140,7 @@ class CustomerBehaviour():
         plt.ylabel('Sales')
         plt.show()
 
+        logger.info("Sales and customers correlation analysis completed.")
 
     def analyze_promo_effect(self):
         # Overall effect of promos on sales and customers
@@ -180,6 +193,8 @@ class CustomerBehaviour():
         plt.ylabel('Promo Lift (%)')
         plt.show()
 
+        logger.info("Promo effect analysis completed.")
+
     def analyze_promo_deployment(self):
         # Calculate average sales lift for each store
         store_promo_effect = self.train_merged.groupby(['Store', 'Promo'])['Sales'].mean().unstack()
@@ -217,6 +232,8 @@ class CustomerBehaviour():
         plt.ylabel('Promo Lift (%)')
         plt.show()
 
+        logger.info("Promo deployment analysis completed.")
+
     def analyze_opening_hours(self):
         # Identify stores open on all weekdays
         open_stores = self.train_merged.groupby('Store')['Open'].mean()
@@ -236,6 +253,8 @@ class CustomerBehaviour():
         plt.ylabel('Ratio')
         plt.show()
 
+        logger.info("Opening hour analysis completed.")
+
     def analyze_assortment_effect(self):
         assortment_map = {
             'a' : 'basic',
@@ -252,6 +271,8 @@ class CustomerBehaviour():
         plt.ylabel('Average Sales')
         plt.show()
 
+        logger.info("Assortment effect analysis completed.")
+
 
     def analyze_new_competitors_grouped(self):
         # Identify stores with new competitors
@@ -260,7 +281,7 @@ class CustomerBehaviour():
             (self.store_df['CompetitionOpenSinceYear'].notna())
         ]['Store']
 
-        print(f"Number of stores with new competitors: {len(new_competitor_stores)}")
+        logger.info(f"Number of stores with new competitors: {len(new_competitor_stores)}")
 
         if len(new_competitor_stores) == 0:
             print("No stores found with new competitors based on the current criteria.")
@@ -305,9 +326,9 @@ class CustomerBehaviour():
             before_mean = before_competition.mean()
             after_mean = after_competition.mean()
 
-            print(f"Distance bin: {distance_bin}")
-            print(f"Before competition mean: {before_mean:.2f}")
-            print(f"After competition mean: {after_mean:.2f}")
+            logger.info(f"Distance bin: {distance_bin}")
+            logger.info(f"Before competition mean: {before_mean:.2f}")
+            logger.info(f"After competition mean: {after_mean:.2f}")
 
             plt.figure(figsize=(10, 6))
             plt.bar(['Before Competition', 'After Competition'], [before_mean, after_mean])
@@ -315,4 +336,4 @@ class CustomerBehaviour():
             plt.ylabel('Average Sales')
             plt.show()
 
-        print("Grouped analysis of new competitors completed.")
+        logger.info("Grouped analysis of new competitors completed.")
