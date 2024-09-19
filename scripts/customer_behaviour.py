@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from IPython.display import display
 import warnings
+import matplotlib.pyplot as plt
+import seaborn as sns
 warnings.filterwarnings("ignore")
 
 class CustomerBehaviour():
@@ -71,3 +73,19 @@ class CustomerBehaviour():
             display(combined_remaining_missing[combined_remaining_missing['Missing Values'] > 0])
 
         display("Data cleaned successfully.")
+
+
+    def analyze_promotion(self):
+        train_promo = self.train_merged['Promo'].value_counts(normalize=True)
+        test_promo = self.test_merged['Promo'].value_counts(normalize=True)
+
+        plt.figure(figsize=(10, 6))
+        plt.bar(['Train', 'Test'], [train_promo[1], test_promo[1]], label='Promo')
+        plt.bar(['Train', 'Test'], [train_promo[0], test_promo[0]], bottom=[train_promo[1], test_promo[1]], label='No Promo')
+        plt.ylabel('Proportion')
+        plt.title('Distribution of Promotions in Train and Test Sets')
+        plt.legend()
+        plt.show()
+
+
+
