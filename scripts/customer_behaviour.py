@@ -57,6 +57,8 @@ class CustomerBehaviour():
                     else:  
                         median_value = df[col].median()
                         df[col].fillna(median_value, inplace=True)
+            if 'StateHoliday' in df.columns:
+                df['StateHoliday'] = df['StateHoliday'].astype(str)
 
             # Convert date to datetime
             if 'Date' in df.columns:
@@ -85,6 +87,16 @@ class CustomerBehaviour():
         plt.ylabel('Proportion')
         plt.title('Distribution of Promotions in Train and Test Sets')
         plt.legend()
+        plt.show()
+
+    def analyze_holidays(self):
+        holiday_sales = self.train_merged.groupby('StateHoliday') ['Sales'].mean()
+        plt.figure(figsize = (12 ,6))
+        holiday_sales.plot(kind = 'bar')
+        plt.title('Average Sales by Holiday Status')
+        plt.xlabel('State Holiday')
+        plt.ylabel('Average Sales')
+        plt.xticks(rotation = 0)
         plt.show()
 
 
