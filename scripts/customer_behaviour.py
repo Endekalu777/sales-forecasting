@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 from IPython.display import display
-import warnings
 import matplotlib.pyplot as plt
 import seaborn as sns
+import warnings
 warnings.filterwarnings("ignore")
 
 class CustomerBehaviour():
@@ -251,3 +251,68 @@ class CustomerBehaviour():
         plt.xlabel('Assortment Type')
         plt.ylabel('Average Sales')
         plt.show()
+
+
+    def analyze_new_competitors_grouped(self):
+        # Identify stores with new competitors
+        new_competitor_stores = self.store_df[
+            (self.store_df['CompetitionDistance'].notna()) & 
+            (self.store_df['CompetitionOpenSinceYear'].notna())
+        ]['Store']
+
+        print(f"Number of stores with new competitors: {len(new_competitor_stores)}")
+
+        if len(new_competitor_stores) == 0:
+            print("No stores found with new competitors based on the current criteria.")
+            return
+
+        # Group stores by competition distance bins
+        self.train_merged['CompetitionDistanceBin'] = pd.cut(
+            self.train_merged['CompetitionDistance'], 
+            bins=[0, 1000, 5000, 10000, np.inf], 
+            labels=['<1km', '1-5km', '5-10km', '>10km']
+        )
+
+        # Analyze sales before and after new competition by distance bins
+        for distance_bin in self.train_merged['CompetitionDistanceBin'].unique():
+            bin_data = self.train_merged[self.train_merged['CompetitionDistanceBin'] == distance_bin]
+
+            if bin_data.empty:
+                print(f"No data for distance bin: {distance_bin}")
+                continue
+
+            # Convert year and month to datetime, handling NaN values
+            competition_dates = pd.to_datetime({
+                'year': bin_data['CompetitionOpenSinceYear'].fillna(2100),
+                'month': bin_data['CompetitionOpenSinceMonth'].fillna(1),
+                'day': 1
+            }, errors='coerce')
+
+            # Check if we have valid competition dates
+            if competition_dates.isna().all():
+                print(f"No valid competition dates for distance bin: {distance_bin}")
+                continue
+
+            # Split data into before and after new competition
+            before_competition = bin_data[bin_data['Date'] < competition_dates]['Sales']
+            after_competition = bin_data[bin_data['Date'] >= competition_dates]['Sales']
+
+            # Check if we have data for both before and after
+            if before_competition.empty or after_competition.empty:
+                print(f"Insufficient data for before/after comparison in distance bin: {distance_bin}")
+                continue
+
+            before_mean = before_competition.mean()
+            after_mean = after_competition.mean()
+
+            print(f"Distance bin: {distance_bin}")
+            print(f"Before competition mean: {before_mean:.2f}")
+            print(f"After competition mean: {after_mean:.2f}")
+
+            plt.figure(figsize=(10, 6))
+            plt.bar(['Before Competition', 'After Competition'], [before_mean, after_mean])
+            plt.title(f'Average Sales Before and After New Competition ({distance_bin} Stores)')
+            plt.ylabel('Average Sales')
+            plt.show()
+
+        print("Grouped analysis of new competitors completed.")
