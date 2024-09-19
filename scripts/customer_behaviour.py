@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 from IPython.display import display
+import warnings
+warnings.filterwarnings("ignore")
 
 class CustomerBehaviour():
     def __init__(self, store_path, train_path, test_path):
@@ -15,7 +17,8 @@ class CustomerBehaviour():
         display("Data merged successfully")
     
     def clean_data(self):
-        for df in [self.train_merged, self.test_merged]:
+        for df_name, df in [('Train Merged Data', self.train_merged), ('Test Merged Data', self.test_merged)]:
+            display(f"---{df_name}---")
             display(df.head())
 
             # Calculate missing values
@@ -43,11 +46,28 @@ class CustomerBehaviour():
 
                 df.drop(columns=f'{col}_z', inplace=True)
 
+            # Handle missing values
+            for col in df.columns:
+                if df[col].isnull().any():
+                    if df[col].dtype == 'object':  
+                        mode_value = df[col].mode()[0]
+                        df[col].fillna(mode_value, inplace=True)
+                    else:  
+                        median_value = df[col].median()
+                        df[col].fillna(median_value, inplace=True)
+
             # Convert date to datetime
             if 'Date' in df.columns:
                 df['Date'] = pd.to_datetime(df['Date'])
                 df['Month'] = df['Date'].dt.month
                 df['Year'] = df['Date'].dt.year
                 df['DayOfWeek'] = df['Date'].dt.dayofweek
+
+            # Check for any remaining missing values
+            remaining_missing = df.isnull().sum()
+            combined_remaining_missing = pd.concat([remaining_missing, (remaining_missing / total_values) * 100], axis=1)
+            combined_remaining_missing.columns = ['Missing Values', 'Percentage(%)']
+            display("Remaining Missing Values After Cleaning:")
+            display(combined_remaining_missing[combined_remaining_missing['Missing Values'] > 0])
 
         display("Data cleaned successfully.")
