@@ -107,5 +107,18 @@ class CustomerBehaviour():
         plt.xticks(rotation = 0)
         plt.show()
 
+    def analyze_seasonal_behavior(self):
+        monthly_sales = self.train_merged.groupby('Month')['Sales'].mean()
+
+        plt.figure(figsize=(12, 6))
+        monthly_sales.plot(kind='line', marker='o')
+        plt.title('Average Monthly Sales')
+        plt.xlabel('Month')
+        plt.ylabel('Average Sales')
+        plt.xticks(range(1, 13))
+        plt.grid(True)
+        plt.show()
+
+
 
 
