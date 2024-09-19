@@ -118,6 +118,15 @@ class CustomerBehaviour():
         plt.xticks(range(1, 13))
         plt.grid(True)
         plt.show()
+    
+    def analyze_sales_customers_correlation(self):
+        correlation = self.train_merged['Sales'].corr(self.train_merged['Customers'])
+        plt.figure(figsize=(10, 6))
+        plt.scatter(self.train_merged['Customers'], self.train_merged['Sales'], alpha=0.5)
+        plt.title(f'Sales vs Customers (Correlation: {correlation:.2f})')
+        plt.xlabel('Number of Customers')
+        plt.ylabel('Sales')
+        plt.show()
 
 
 
