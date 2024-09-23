@@ -2,7 +2,11 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from datetime import datetime
-
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+import warnings
+warnings.filterwarnings("ignore")
 
 class SalesPrediction:
     def __init__(self, train_path, test_path):
@@ -76,6 +80,25 @@ class SalesPrediction:
 
         # Define feature columns for training
         self.feature_cols = [col for col in self.train_df.columns if col != 'Sales']
+
+    def model_training(self):
+        X = self.train_df[self.feature_cols]
+        y = self.train_df['Sales']
+
+        # drop the Date column
+        X = X.drop('Date', axis=1)
+
+        X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        self.rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
+        self.rf_model.fit(X_train, y_train)
+
+        # Validate the model
+        val_predictions = self.rf_model.predict(X_val)
+        mse = mean_squared_error(y_val, val_predictions)
+        mae = mean_absolute_error(y_val, val_predictions)
+        print(f"Validation MSE: {mse}")
+        print(f"Validation MAE: {mae}")
 
     
 
