@@ -1,5 +1,8 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from sklearn.preprocessing import StandardScaler
 from datetime import datetime
 from sklearn.model_selection import train_test_split
@@ -86,7 +89,7 @@ class SalesPrediction:
         y = self.train_df['Sales']
 
         # drop the Date column
-        X = X.drop('Date', axis=1)
+        X = X.drop('Date', axis = 1)
 
         X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -100,6 +103,36 @@ class SalesPrediction:
         print(f"Validation MSE: {mse}")
         print(f"Validation MAE: {mae}")
 
-    
+    def deep_learning_model(self):
+        # Filter the data for Store 1
+        store_data = self.train_df[self.train_df['Store'] == 1][['Date', 'Sales']]
+        
+        # Convert 'Date' to datetime format if not already done
+        store_data['Date'] = pd.to_datetime(store_data['Date'], errors='coerce')
+        
+        # Set the 'Date' column as the index
+        store_data.set_index('Date', inplace=True)
 
-    
+        # Resample the data by day ('D'), summing up sales for each day
+        time_series_data = store_data.resample('D').sum()
+
+        # Perform ADF test (Augmented Dickey-Fuller) to check for stationarity
+        result = adfuller(time_series_data['Sales'].dropna())
+        print('ADF Statistic:', result[0])
+        print('p-value:', result[1])
+
+        # If the series is not stationary (p-value > 0.05), difference it
+        if result[1] > 0.05:
+            time_series_data['Sales'] = time_series_data['Sales'].diff().dropna()
+
+        # Plot Autocorrelation Function (ACF)
+        plot_acf(time_series_data['Sales'].dropna())
+        plt.title('Autocorrelation')
+        plt.show()
+
+        # Plot Partial Autocorrelation Function (PACF)
+        plot_pacf(time_series_data['Sales'].dropna())
+        plt.title('Partial Autocorrelation')
+        plt.show()
+
+        return time_series_data
