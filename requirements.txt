@@ -1,0 +1,4 @@
+flask
+tensorflow
+joblib
+scikit-learn==1.5.2
