@@ -3,11 +3,11 @@ from flask import Flask, request, jsonify, render_template
 from tensorflow.keras.models import load_model
 import joblib
 
-app = Flask(__name__, template_folder="../templates")
+app = Flask(__name__, template_folder="./templates")
 
 # Load the Random Forest model (assuming it is saved in joblib format)
 try:
-    rf_model = joblib.load("../artifacts/rf_model.pkl")
+    rf_model = joblib.load("./artifacts/rf_model.pkl")
     
     # Remove the scaler-related code since it's not needed for Random Forest
     print("Model loaded successfully.")
