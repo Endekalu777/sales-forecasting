@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Sales Prediction API</title>
+    <link href="https://fonts.googleapis.com/css?family=Pacifico" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Arimo" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Hind:300" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <div class="Login">
+        <h1>Sales Prediction</h1>
+        <form action="{{url_for('predict')}}" method="post">
+            <input type="text" name="Store" placeholder="Store ID" required="required" /><br>
+            <input type="text" name="DayOfWeek" placeholder="Day of the Week (1-7)" required="required" /><br>
+            <input type="text" name="Customers" placeholder="Number of Customers" required="required" /><br>
+            <input type="text" name="Open" placeholder="Open (0 or 1)" required="required" /><br>
+            <input type="text" name="Promo" placeholder="Promo (0 or 1)" required="required" /><br>
+            <input type="text" name="SchoolHoliday" placeholder="School Holiday (0 or 1)" required="required" /><br>
+            <input type="text" name="CompetitionDistance" placeholder="Competition Distance (meters)" required="required" /><br>
+            <input type="text" name="CompetitionOpenSinceMonth" placeholder="Competition Open Since Month (1-12)" required="required" /><br>
+            <input type="text" name="CompetitionOpenSinceYear" placeholder="Competition Open Since Year" required="required" /><br>
+            <input type="text" name="Promo2" placeholder="Promo2 (0 or 1)" required="required" /><br>
+            <input type="text" name="Promo2SinceWeek" placeholder="Promo2 Since Week (1-52)" required="required" /><br>
+            <input type="text" name="Promo2SinceYear" placeholder="Promo2 Since Year" required="required" /><br>
+            <input type="text" name="Month" placeholder="Month (1-12)" required="required" /><br>
+            <input type="text" name="Year" placeholder="Year" required="required" /><br>
+            <input type="text" name="SalesPerCustomer" placeholder="Sales Per Customer" required="required" /><br>
+            <input type="text" name="IsWeekend" placeholder="Is Weekend (0 or 1)" required="required" /><br>
+            <input type="text" name="DaysToHoliday" placeholder="Days to Holiday" required="required" /><br>
+            <input type="text" name="DaysAfterHoliday" placeholder="Days After Holiday" required="required" /><br>
+            <input type="text" name="IsBeginningOfMonth" placeholder="Is Beginning of Month (0 or 1)" required="required" /><br>
+            <input type="text" name="IsMidMonth" placeholder="Is Mid Month (0 or 1)" required="required" /><br>
+            <input type="text" name="IsEndOfMonth" placeholder="Is End of Month (0 or 1)" required="required" /><br>
+            <input type="text" name="Quarter" placeholder="Quarter (1-4)" required="required" /><br>
+            <input type="text" name="WeekOfYear" placeholder="Week of the Year (1-52)" required="required" /><br>
+            <input type="text" name="StoreType_b" placeholder="Store Type B (0 or 1)" required="required" /><br>
+            <input type="text" name="StoreType_c" placeholder="Store Type C (0 or 1)" required="required" /><br>
+            <input type="text" name="StoreType_d" placeholder="Store Type D (0 or 1)" required="required" /><br>
+            <input type="text" name="Assortment_extended" placeholder="Assortment Extended (0 or 1)" required="required" /><br>
+            <input type="text" name="Assortment_extra" placeholder="Assortment Extra (0 or 1)" required="required" /><br>
+            <input type="text" name="StateHoliday_Easter" placeholder="Easter Holiday (0 or 1)" required="required" /><br>
+            <input type="text" name="StateHoliday_Public" placeholder="Public Holiday (0 or 1)" required="required" /><br>
+            <input type="text" name="PromoInterval_Jan_Apr_Jul_Oct" placeholder="Promo Interval (Jan,Apr,Jul,Oct)" required="required" /><br>
+            <input type="text" name="PromoInterval_Mar_Jun_Sep_Dec" placeholder="Promo Interval (Mar,Jun,Sep,Dec)" required="required" /><br>
+            <input type="text" name="CompetitionDistanceBin_5_10km" placeholder="Competition Distance Bin (5-10 km, 0 or 1)" required="required" /><br>
+            <input type="text" name="CompetitionDistanceBin_<1km" placeholder="Competition Distance Bin (<1 km, 0 or 1)" required="required" /><br>
+            <input type="text" name="CompetitionDistanceBin_>10km" placeholder="Competition Distance Bin (>10 km, 0 or 1)" required="required" /><br>
+
+            <button type="submit" class="btn btn-primary btn-block btn-large">Predict</button>
+        </form>
+
+        <br>
+        <br>
+    </div>
+    {{prediction_text}}
+</body>
+</html>
