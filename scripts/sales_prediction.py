@@ -204,3 +204,20 @@ class SalesPrediction:
         })
 
         return forecast_df
+    
+    def serialize_model(self):
+        rf_model_filename = f'/kaggle/working/rf_model.pkl'
+        joblib.dump(self.rf_model, rf_model_filename, compress =9)
+        print(f'Random Forest model saved as: {rf_model_filename}')
+
+    def save_lstm_model(self):
+        timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+        lstm_model_filename = f'/kaggle/working/lstm_model_{timestamp}.h5'
+        scaler_filename = f'/kaggle/working/scaler_{timestamp}.pkl'
+        
+        # Save lstm model
+        self.lstm_model.save(lstm_model_filename)
+        
+        # Save scaler
+        joblib.dump(self.scaler, scaler_filename)
+        print(f'Scaler saved as: {scaler_filename}')
