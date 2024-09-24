@@ -1,5 +1,8 @@
+flask
+tensorflow
+joblib
 pandas
 numpy
 matplotlib
 seaborn
-IPython
+ipython
