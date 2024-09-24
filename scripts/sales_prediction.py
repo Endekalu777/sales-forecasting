@@ -179,3 +179,28 @@ class SalesPrediction:
 
         # Print the validation MSE for the LSTM model
         print(f"LSTM Validation MSE: {val_loss}")
+
+    def forecast_sales(self, time_series_data, future_periods=42):
+        sales_data = time_series_data['Sales'].values.reshape(-1, 1)
+        sales_data_scaled = self.scaler.transform(sales_data)
+
+        last_sequence = sales_data_scaled[-10:]
+
+        predictions = []
+        for _ in range(future_periods):
+            X_input = last_sequence.reshape((1, last_sequence.shape[0], 1))
+            predicted_sales = self.lstm_model.predict(X_input)
+            predictions.append(predicted_sales[0][0])
+            last_sequence = np.append(last_sequence[1:], predicted_sales, axis=0)
+
+        predictions = np.array(predictions).reshape(-1, 1)
+        predicted_sales = self.scaler.inverse_transform(predictions)
+        last_date = pd.to_datetime(time_series_data.index[-1])
+        future_dates = pd.date_range(last_date + pd.Timedelta(days=1), periods=future_periods)
+
+        forecast_df = pd.DataFrame({
+            'Date': future_dates,
+            'PredictedSales': predicted_sales.flatten()
+        })
+
+        return forecast_df
