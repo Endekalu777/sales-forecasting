@@ -3,7 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from tensorflow.keras.layers import LSTM, Dense, Dropout
 from datetime import datetime
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
@@ -81,10 +82,11 @@ class SalesPrediction:
         self.train_df[numeric_cols] = self.scaler.fit_transform(self.train_df[numeric_cols])
         self.test_df[numeric_cols] = self.scaler.transform(self.test_df[numeric_cols])
 
-        # Define feature columns for training
-        self.feature_cols = [col for col in self.train_df.columns if col != 'Sales']
+        
 
     def model_training(self):
+        # Define feature columns for training
+        self.feature_cols = [col for col in self.train_df.columns if col != 'Sales']
         X = self.train_df[self.feature_cols]
         y = self.train_df['Sales']
 
@@ -136,3 +138,44 @@ class SalesPrediction:
         plt.show()
 
         return time_series_data
+
+    @staticmethod
+    def create_dataset(data, time_step=1):
+        X, y = [], []
+        for i in range(len(data) - time_step - 1):
+            X.append(data[i:(i + time_step), 0])
+            y.append(data[i + time_step, 0])
+        return np.array(X), np.array(y)
+
+    def prepare_lstm_data(self, time_series_data, time_steps=10):
+        sales_data = time_series_data['Sales'].values
+        X, y = self.create_dataset(sales_data.reshape(-1, 1), time_steps)
+        X = X.reshape(X.shape[0], X.shape[1], 1)
+
+        self.scaler = MinMaxScaler(feature_range=(-1, 1))
+        sales_data_scaled = self.scaler.fit_transform(sales_data.reshape(-1, 1))
+        return X, y, self.scaler
+
+    def build_lstm(self, X, y):
+        # Define LSTM model
+        self.lstm_model = Sequential([
+            LSTM(50, return_sequences=True, input_shape=(X.shape[1], 1)),
+            Dropout(0.2),
+            LSTM(50),
+            Dropout(0.2),
+            Dense(1)
+        ])
+
+        self.lstm_model.compile(optimizer='adam', loss='mean_squared_error')
+
+        # Split data into training and validation sets
+        X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Train the model
+        history = self.lstm_model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_val, y_val))
+
+        # Evaluate the model on validation data
+        val_loss = self.lstm_model.evaluate(X_val, y_val, verbose=0)
+
+        # Print the validation MSE for the LSTM model
+        print(f"LSTM Validation MSE: {val_loss}")
